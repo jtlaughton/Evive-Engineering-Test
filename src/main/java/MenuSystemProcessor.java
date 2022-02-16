@@ -5,6 +5,19 @@ public class MenuSystemProcessor {
     public static void main(String[] args){
         MenuSystem menu = new MenuSystem();
 
+        menu.addMenuItem("Eggs", 1, "breakfast", "main", false);
+        menu.addMenuItem("Toast", 2, "breakfast", "side", false);
+        menu.addMenuItem("Coffee", 3, "breakfast", "drink", true);
+
+        menu.addMenuItem("Sandwich", 1, "lunch", "main", false);
+        menu.addMenuItem("Chips", 2, "lunch", "side", true);
+        menu.addMenuItem("Soda", 3, "lunch", "drink", false);
+
+        menu.addMenuItem("Steak", 1, "dinner", "main", false);
+        menu.addMenuItem("Potatoes", 2, "dinner", "side", false);
+        menu.addMenuItem("Wine", 3, "dinner", "drink", false);
+        menu.addMenuItem("Cake", 4, "dinner", "dessert", false);
+
         System.out.println("Enter Your Order Below Like 'meal items'. Enter Items As Comma Separated List. Enter 'quit' To Exit: ");
         Scanner sc = new Scanner(System.in);
         String str = sc.nextLine();
@@ -17,8 +30,8 @@ public class MenuSystemProcessor {
             parts = str.split(" ", 2);
 
             if(parts.length != 2){
-                System.out.println("\nPlease Enter In Format 'meal items':");
-                continue;
+                Order theOrder = menu.getOrder(str, new ArrayList<>());
+                System.out.println(theOrder.message());
             }
             else{
                 String menuType = parts[0];

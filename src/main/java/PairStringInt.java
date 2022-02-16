@@ -48,4 +48,12 @@ public class PairStringInt {
     public int hashCode() {
         return this.s.hashCode() * this.i.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return "PairStringInt{" +
+                "s='" + s + '\'' +
+                ", i=" + i +
+                '}';
+    }
 }

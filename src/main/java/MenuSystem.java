@@ -1,145 +1,190 @@
+
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 
 public class MenuSystem {
-    private ArrayList<DishType> breakfastMenu;
-    private ArrayList<DishType> lunchMenu;
-    private ArrayList<DishType> dinnerMenu;
+    private HashMap<Integer, MenuItem> breakfastMenu;
+    private HashMap<Integer, MenuItem> lunchMenu;
+    private HashMap<Integer, MenuItem> dinnerMenu;
 
-    private record DishType(String name, MenuItem item) {}
-
-    private record MenuItem(int id, String name, boolean multAllowed) {}
+    private record MenuItem(Integer id, String name, String dishType, boolean multAllowed) {}
 
     MenuSystem(){
-        breakfastMenu = new ArrayList<>();
-        lunchMenu = new ArrayList<>();
-        dinnerMenu = new ArrayList<>();
+        breakfastMenu = new HashMap<>();
+        lunchMenu = new HashMap<>();
+        dinnerMenu = new HashMap<>();
+    }
 
-        breakfastMenu.add(new DishType("Main", new MenuItem(1, "Eggs", false)));
-        breakfastMenu.add(new DishType("Side", new MenuItem(2, "Toast", false)));
-        breakfastMenu.add(new DishType("Drink", new MenuItem(3, "Coffee", true)));
+    public void removeMenuItem(Integer id, String menuType){
+        menuType = menuType.toLowerCase();
 
-        lunchMenu.add(new DishType("Main", new MenuItem(1, "Sandwich", false)));
-        lunchMenu.add(new DishType("Side", new MenuItem(2, "Chips", true)));
-        lunchMenu.add(new DishType("Drink", new MenuItem(3, "Soda", false)));
+        switch(menuType){
+            case "breakfast":
+                breakfastMenu.remove(id);
+                break;
+            case "lunch":
+                lunchMenu.remove(id);
+                break;
+            case "dinner":
+                dinnerMenu.remove(id);
+                break;
+        }
+    }
 
-        dinnerMenu.add(new DishType("Main", new MenuItem(1, "Steak", false)));
-        dinnerMenu.add(new DishType("Side", new MenuItem(2, "Potatoes", false)));
-        dinnerMenu.add(new DishType("Drink", new MenuItem(3, "Wine", false)));
-        dinnerMenu.add(new DishType("Dessert", new MenuItem(4, "Cake", false)));
+    public boolean addMenuItem(String name, Integer id, String menuType, String dishType, boolean multAllowed ){
+        menuType = menuType.toLowerCase();
+        dishType = dishType.toLowerCase();
+
+        if(!dishType.equals("main") && !dishType.equals("side") && !dishType.equals("drink") && !dishType.equals("dessert"))
+            return false;
+
+        if(dishType.equals("dessert") && !menuType.equals("dinner"))
+            return false;
+
+        switch(menuType){
+            case "breakfast":
+                if(breakfastMenu.get(id) != null)
+                    return false;
+
+                breakfastMenu.put(id, new MenuItem(id, name, dishType, multAllowed));
+                return true;
+            case "lunch":
+                if(lunchMenu.get(id) != null)
+                    return false;
+
+                lunchMenu.put(id, new MenuItem(id, name, dishType, multAllowed));
+                return true;
+            case "dinner":
+                if(dinnerMenu.get(id) != null)
+                    return false;
+
+                dinnerMenu.put(id, new MenuItem(id, name, dishType, multAllowed));
+                return true;
+            default:
+                return false;
+        }
     }
 
     public Order getOrder(String type, ArrayList<Integer> itemNumbers){
-        boolean foundVals[] = new boolean[4];
-        ArrayList<PairStringInt> itemQuant = new ArrayList<>();
+        ArrayList<HashMap<Integer, PairStringInt>> itemQuant = new ArrayList<>();
 
-        itemQuant.add(new PairStringInt("temp", 0));
-        itemQuant.add(new PairStringInt("temp", 0));
-        itemQuant.add(new PairStringInt("temp", 0));
+        int insertPosMain = 0;
+        int insertPosSide = 1;
+        int insertPosDrink = 2;
+        int insertPosDessert = 3;
+
+        itemQuant.add(new HashMap<>());
+        itemQuant.add(new HashMap<>());
+        itemQuant.add(new HashMap<>());
 
         type = type.toLowerCase();
 
+        boolean mainFound = false;
+        boolean sideFound = false;
+        boolean drinkFound = false;
+        boolean dessertFound = false;
+
+        boolean addWaterAfter = false;
+
+        HashMap<Integer, MenuItem> current;
+
         switch(type){
             case "breakfast":
-                for(Integer i: itemNumbers){;
-                    if(i > 3)
-                        return new Order("Failure", null, "Unable to process: Item number not in the breakfast menu");
-
-                    MenuItem current = breakfastMenu.get(i-1).item;
-
-                    if(foundVals[i-1] && !current.multAllowed)
-                        return new Order("Failure", null, "Unable to process: " + current.name + " cannot be ordered more than once");
-
-                    Integer num = itemQuant.get(i-1).getI();
-
-                    if(!foundVals[i-1])
-                        itemQuant.get(i-1).setS(current.name);
-
-                    itemQuant.get(i-1).setI(num + 1);
-
-                    foundVals[i - 1] = true;
-                }
-
-                if(!foundVals[2]){
-                    itemQuant.get(2).setS("Water");
-                    foundVals[2] = true;
-                }
+                current = breakfastMenu;
                 break;
             case "lunch":
-                for(Integer i: itemNumbers){;
-                    if(i > 3)
-                        return new Order("Failure", null, "Unable to process: Item number not in the lunch menu");
-
-                    MenuItem current = lunchMenu.get(i-1).item;
-
-                    if(foundVals[i-1] && !current.multAllowed)
-                        return new Order("Failure", null, "Unable to process: " + current.name + " cannot be ordered more than once");
-
-                    Integer num = itemQuant.get(i-1).getI();
-
-                    if(!foundVals[i-1])
-                        itemQuant.get(i-1).setS(current.name);
-
-                    itemQuant.get(i-1).setI(num + 1);
-
-                    foundVals[i - 1] = true;
-                }
-                if(!foundVals[2]){
-                    itemQuant.get(2).setS("Water");
-                    foundVals[2] = true;
-                }
+                current = lunchMenu;
                 break;
             case "dinner":
-                itemQuant.add(new PairStringInt("temp", 0));
-
-                for(Integer i: itemNumbers){;
-                    if(i > 4)
-                        return new Order("Failure", null, "Unable to process: Item number not in the dinner menu");
-
-                    MenuItem current = dinnerMenu.get(i-1).item;
-
-                    if(foundVals[i-1] && !current.multAllowed)
-                        return new Order("Failure", null, "Unable to process: " + current.name + " cannot be ordered more than once");
-
-                    Integer num = itemQuant.get(i-1).getI();
-
-                    if(!foundVals[i-1])
-                        itemQuant.get(i-1).setS(current.name);
-
-                    itemQuant.get(i-1).setI(num + 1);
-
-                    foundVals[i - 1] = true;
-                }
-
-                if(foundVals[2]){
-                    itemQuant.add(3, new PairStringInt("Water", 1));
-                }
-                else{
-                    itemQuant.get(2).setS("Water");
-                    itemQuant.get(2).setI(1);
-                    foundVals[2] = true;
-                }
+                current = dinnerMenu;
+                itemQuant.add(new HashMap<>());
                 break;
+            default:
+                return new Order("Failure", null, "Unable to process: Not a valid menu type");
         }
 
-        if((type.equals("lunch") || type.equals("breakfast")) && foundVals[0] && foundVals[1] && foundVals[2])
-            return new Order(type, itemQuant, "success");
+        for(Integer i: itemNumbers){;
+            MenuItem item = current.get(i);
 
-        else if(type.equals("dinner") && foundVals[0] && foundVals[1] && foundVals[2] && foundVals[3])
-            return new Order(type, itemQuant, "success");
+            if(item == null)
+                return new Order("Failure", null, "Unable to process: Item number not in " + type + " menu");
+
+            int position = -1;
+
+            switch(item.dishType()){
+                case "main":
+                    position = 0;
+                    mainFound = true;
+                    break;
+                case "side":
+                    position = 1;
+                    sideFound = true;
+                    break;
+                case "drink":
+                    position = 2;
+                    drinkFound = true;
+                    break;
+                case "dessert":
+                    position = 3;
+                    dessertFound = true;
+                    break;
+            }
+
+            PairStringInt prevStored = itemQuant.get(position).get(item.id());
+
+            if(prevStored == null){
+                itemQuant.get(position).put(item.id, new PairStringInt(item.name(), 1));
+            }
+
+            else{
+                Integer val = itemQuant.get(position).get(item.id()).getI();
+
+                if(val >= 1 && item.multAllowed())
+                    itemQuant.get(position).get(item.id()).setI(val + 1);
+                else
+                    return new Order("Failure", null, "Unable to process: " + item.name() + " cannot be ordered more than once");
+            }
+        }
+
+        if(drinkFound && type.equals("dinner")){
+            addWaterAfter = true;
+        }
+        else if(!drinkFound){
+            itemQuant.get(2).put(0, new PairStringInt("Water", 1));
+            drinkFound = true;
+        }
+
+        ArrayList<PairStringInt> listifiedHashMap = new ArrayList<>();
+
+        int counter = 0;
+        for(HashMap<Integer, PairStringInt> map: itemQuant){
+            Collection<PairStringInt> values = map.values();
+
+            listifiedHashMap.addAll(values);
+
+            if(addWaterAfter && (counter == 2))
+                listifiedHashMap.add(new PairStringInt("Water", 1));
+
+            counter++;
+        }
+
+        if((type.equals("lunch") || type.equals("breakfast")) && mainFound && sideFound && drinkFound)
+            return new Order(type, listifiedHashMap, "success");
+
+        else if(type.equals("dinner") && mainFound && sideFound && drinkFound && dessertFound)
+            return new Order(type, listifiedHashMap, "success");
 
         else{
-            String temp = "";
+            String temp = "Unable to process: ";
 
-            if(!foundVals[0])
+            if(!mainFound)
                 temp += "Main is missing, ";
 
-            if(!foundVals[1])
+            if(!sideFound)
                 temp += "Side is missing, ";
 
-            if(!foundVals[2])
-                temp += "Drink is missing, ";
-
-            if(!foundVals[3] && type.equals("dinner"))
+            if(!dessertFound && type.equals("dinner"))
                 temp += "Dessert is missing, ";
 
             return new Order("Failure", null, temp.substring(0, temp.length() - 2));
