@@ -1,3 +1,5 @@
+package com.gradle.evive;
+
 import java.util.Objects;
 
 public class PairStringInt {

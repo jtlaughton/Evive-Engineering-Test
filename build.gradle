@@ -1,5 +1,15 @@
 plugins {
     id 'java'
+    id 'application'
+
+}
+
+application {
+    mainClassName = 'com.gradle.evive.MenuSystemProcessor'
+}
+
+run {
+    standardInput = System.in
 }
 
 group 'org.example'
@@ -13,6 +23,18 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     implementation 'org.junit.jupiter:junit-jupiter-params:5.8.2'
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    manifest {
+        attributes "Main-Class": "com.gradle.evive.MenuSystemProcessor"
+    }
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
 
 test {
